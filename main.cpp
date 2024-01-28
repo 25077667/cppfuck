@@ -23,16 +23,11 @@ std::string get_obfuscate(int num)
     // get the deep and target_level of the tree
     int deep = random_int(1, 10);
     int target_level = random_int(0, deep - 1);
-
-    std::cout << "num: " << num << std::endl;
-    std::cout << "deep: " << deep << std::endl;
-    std::cout << "target_level: " << target_level << std::endl;
-
     // input is a int, we use binary search tree to indicate the target string should be placed
     // we put our obfuscate string in the middle of the tree (target_level)
     // other places are padding random bytes (int type)
     constexpr auto obfuscate_operand = "(!(-![]{}))";
-    constexpr auto trinary_operator_format = "((%ul & 1) ? (%s) : (%s))";
+    constexpr auto trinary_operator_format = "((%s) ? (%s) : (%s))";
 
     std::string obfuscate_string = "(%s)";
 
@@ -50,8 +45,6 @@ std::string get_obfuscate(int num)
             }
             // remove the last '+'
             target_obfus.pop_back();
-
-            std::cout << "target_obfus: " << target_obfus << std::endl;
         }
 
         // padding random bytes
@@ -64,23 +57,18 @@ std::string get_obfuscate(int num)
         // remove the last '+'
         padding_string.pop_back();
 
-        std::cout << "padding_string: " << padding_string << std::endl;
-        std::cout << "current position: " << i << std::endl;
-
         // Generate a random number for the ternary operator's condition.
         int condition = random_int();
         // Allocate enough space for the string.
         auto buffer = std::make_unique<char[]>(padding_string.length() + target_obfus.length() + 128);
         // Format the string using the ternary operator.
         snprintf(buffer.get(), padding_string.length() + target_obfus.length() + 128, trinary_operator_format,
-                 condition & 1,
+                 (std::to_string(condition) + " & 1").c_str(),
                  condition & 1 ? target_obfus.c_str() : padding_string.c_str(),
                  condition & 1 ? padding_string.c_str() : target_obfus.c_str());
 
         // use obfuscate_string format and replace the %s with the buffer in c++11
         obfuscate_string = std::regex_replace(obfuscate_string, std::regex("%s"), buffer.get());
-
-        std::cout << "obfuscate_string: " << obfuscate_string << std::endl;
     }
 
     return obfuscate_string;
